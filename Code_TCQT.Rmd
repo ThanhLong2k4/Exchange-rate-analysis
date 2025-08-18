@@ -1,0 +1,103 @@
+---
+title: "Untitled"
+author: "Nguyễn Thành Long"
+date: "2025-04-21"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tseries)
+library(forecast)
+```
+```{r}
+Data_TCQT <- read_csv("TÀI CHÍNH QUỐC TẾ/Data TCQT.csv")
+```
+```{r}
+Data_TCQT$Ngày <- as.Date(Data_TCQT$Ngày, format = "%m/%d/%Y")
+
+
+ggplot(Data_TCQT, aes(x = Ngày, y = `USD/VND`)) +
+  geom_line(color = "blue") +
+  labs(title = "Tỷ giá USD/VND theo thời gian",
+       x = "Thời gian", y = "Tỷ giá (VND)") +
+  theme_minimal()
+
+ggplot(Data_TCQT, aes(x = Ngày, y = `EUR/VND`)) +
+  geom_line(color = "darkgreen") +
+  labs(title = "Tỷ giá EUR/VND theo thời gian",
+       x = "Thời gian", y = "Tỷ giá (VND)") +
+  theme_minimal()
+```
+```{r}
+# Câu 2
+ln_usd=Data_TCQT$ln_USD 
+ln_eur=Data_TCQT$ln_EUR
+
+ln_usd=as.numeric(ln_usd)
+ln_eur=as.numeric(ln_eur)
+
+ln_usd=na.omit(ln_usd)
+ln_eur=na.omit(ln_eur)
+
+hist(ln_usd, main = "Histogram of Log Returns USD", xlab = "Log Returns", col = "lightblue", border = "black")
+hist(ln_eur, main = "Histogram of Log Returns EUR", xlab = "Log Returns", col = "lightblue", border = "black")
+# Kiểm tra pp chuẩn 
+jarque.bera.test(ln_usd) # Bác bỏ Ho, không pp chuẩn
+jarque.bera.test(ln_eur)
+
+# Độ lệch chuẩn
+sd(ln_usd)
+sd(ln_eur)
+```
+```{r}
+# Câu 3
+eur_usd=Data_TCQT$`EUR/VND`/Data_TCQT$`USD/VND`
+eur_usd_real=Data_TCQT$`EUR/USD`
+
+t.test(eur_usd,eur_usd_real)
+```
+```{r}
+# Câu 4
+data_CPI <- read_excel("TÀI CHÍNH QUỐC TẾ/data CPI.xlsx")
+
+cor(data_CPI$CPI_VND,data_CPI$CPI_USD, method = "pearson")
+```
+```{r}
+t.test(data_CPI$`USD/VND`,data_CPI$`USD/VND (PPP)`)
+```
+```{r}
+# Câu 6
+Acf(diff(Data_TCQT$`USD/VND`))
+Pacf(diff(Data_TCQT$`USD/VND`))
+```
+```{r}
+p_arima = Arima(Data_TCQT$`USD/VND`, order = c(4,1,1), include.constant = 0)
+summary(p_arima)
+
+forecast(p_arima,h=14)
+
+```
+```{r}
+library(stats)
+#Định giá premium của quyền chọn bán
+sd(Data_TCQT$`USD/VND`)
+S0<-Data_TCQT$`USD/VND`[length(Data_TCQT$`USD/VND`)]
+K<-Data_TCQT$`USD/VND`[length(Data_TCQT$`USD/VND`)]
+r <- 0.03976
+T<-2/52
+Sigma=381.3486/S0
+
+d1 <- (log(S0/K)+(r+0.5*Sigma^2)*T)/(Sigma*sqrt(T))
+d2 <- d1 - Sigma*sqrt(T)
+
+#Tính P
+P <- K*exp(-r*T)*pnorm(-d2) - S0*pnorm(-d1)
+P
+```
+
