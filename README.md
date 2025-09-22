@@ -11,7 +11,7 @@
 ## 📂 Tệp tin
 | File            | Mô tả |
 |-----------------|-------|
-| `.xlsx`      | 📊 File dữ liệu |
+| `.xlsx``.csv`      | 📊 File dữ liệu |
 | `.docx`    | 📄 File báo cáo |
 | `.Rmd`        | 🧑‍💻 File code |
 
